@@ -1,14 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from models.models import ChatRequest, Client, ChatMessage
+from fastapi.responses import StreamingResponse
+from models.models import ChatRequest, Client
 from clients.mistral_client import mistral_client
-from haystack.dataclasses import ChatMessage as MistralChatMessage
-from haystack_integrations.components.generators.mistral import MistralChatGenerator
 import sqlite3
+import re
+import os
 
+# Initialize FastAPI router
 router = APIRouter()
 
 # Initialize the Mistral client
-client = MistralChatGenerator(model="mistral-medium")
+model = "open-mistral-nemo"
 
 # Function to fetch client information from the SQLite database
 def get_client_info(user_id: int) -> Client:
@@ -18,7 +20,7 @@ def get_client_info(user_id: int) -> Client:
 
     query = """
       SELECT id, nombre, fecha_nacimiento, cc, telefono, email, monto_deuda,
-             fecha_vencimiento, estado_cuenta, historial_pagos
+              fecha_vencimiento, estado_cuenta, historial_pagos
       FROM clientes
       WHERE id = ?
     """
@@ -45,6 +47,35 @@ def get_client_info(user_id: int) -> Client:
     print(f"Error fetching client info: {str(e)}")
     return None
 
+# Generator function for streaming responses
+async def generate_response(client_context: str, user_message: str):
+  try:
+    # Prepare the chat completion request
+    messages = [
+      {"role": "system", "content": client_context},
+      {"role": "user", "content": user_message}
+    ]
+
+    # Call the Mistral API
+    chat_response = mistral_client.chat.complete(
+      model=model,
+      messages=messages
+    )
+
+    # Extract the response content
+    mistral_reply = chat_response.choices[0].message.content
+
+    # Split the response into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', mistral_reply)
+
+    # Yield each sentence as a separate chunk
+    for sentence in sentences:
+      if sentence.strip():
+        yield sentence + " "
+
+  except Exception as e:
+      yield f"Error: {str(e)}"
+
 @router.post("/chat")
 async def chat_completion(request: ChatRequest):
   try:
@@ -54,7 +85,7 @@ async def chat_completion(request: ChatRequest):
     if not client_info:
       raise HTTPException(status_code=404, detail="Client not found")
 
-    # Build the static client context
+  # Build the static client context
     client_context = (
       "Eres un bot de negociación financiera. Tu objetivo es lograr una propuesta favorable tanto para el banco como para el cliente.\n"
       f"Información del Cliente:\n"
@@ -66,19 +97,8 @@ async def chat_completion(request: ChatRequest):
       f"- Estado de la Cuenta: {client_info.estado_cuenta}\n"
       f"- Historial de Pagos: {client_info.historial_pagos}\n\n"
     )
-
-    # Append the user's message
-    full_message = f"{client_context}Mensaje del Cliente: {request.message}"
-
-    # Create the chat message using Mistral's factory method
-    chat_message = MistralChatMessage.from_user(full_message)
-
-    # Generate a response using the Mistral client
-    mistral_response = client.run(messages=[chat_message])
-    mistral_reply = mistral_response['replies'][0].content
-
-    # Return the Mistral reply
-    return {"response": mistral_reply}
+    
+    return StreamingResponse(generate_response(client_context, request.message), media_type="text/plain")
 
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
