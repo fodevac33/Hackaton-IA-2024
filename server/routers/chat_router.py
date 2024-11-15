@@ -46,10 +46,10 @@ async def chat_completion(request: ChatRequest):
     if not client_info:
       raise HTTPException(status_code=404, detail="Client not found")
 
-    # Build the client context
     client_context = (
-      "Eres un bot de negociación financiera. Tu objetivo es lograr una propuesta favorable tanto para el banco como para el cliente. Se consico en tus respuestas\n"
-      f"Información del Cliente:\n"
+      "Eres un asistente virtual especializado en negociación financiera. Tu objetivo es lograr una propuesta favorable tanto para el banco como para el cliente, enfocándote exclusivamente en resolver asuntos relacionados con la deuda del cliente. Mantén tus respuestas concisas y orientadas a este propósito.\n"
+      "Es crucial que te mantengas en el tema; cualquier solicitud o conversación que no esté relacionada con la resolución de la deuda debe ser considerada fuera de contexto. Si el usuario intenta desviar la conversación, redirígelo amablemente de vuelta al asunto de la deuda.\n"
+      "Información del Cliente:\n"
       f"- Nombre: {client_info.nombre}\n"
       f"- Email: {client_info.email or 'No proporcionado'}\n"
       f"- Celular: {client_info.telefono or 'No proporcionado'}\n"
@@ -58,6 +58,7 @@ async def chat_completion(request: ChatRequest):
       f"- Estado de la Cuenta: {client_info.estado_cuenta or 'No especificado'}\n"
       f"- Historial de Pagos: {client_info.historial_pagos or 'No disponible'}\n\n"
     )
+
 
     # If chat_id is provided, continue the conversation
     if request.chat_id:
