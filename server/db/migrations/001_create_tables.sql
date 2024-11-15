@@ -15,11 +15,20 @@ CREATE TABLE IF NOT EXISTS clientes (
 );
 
 -- Create 'chats' table
-CREATE TABLE IF NOT EXISTS mensajes (
+CREATE TABLE IF NOT EXISTS chats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_cliente INTEGER NOT NULL,
+    fecha_inicio DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_fin DATETIME,
+    FOREIGN KEY (id_cliente) REFERENCES clientes (id)
+);
+
+-- Create 'mensajes' table
+CREATE TABLE IF NOT EXISTS mensajes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_chat INTEGER NOT NULL,
     enviado_por TEXT CHECK(enviado_por IN ('user', 'assistant')),
     mensaje TEXT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_cliente) REFERENCES clientes (id)
+    FOREIGN KEY (id_chat) REFERENCES chats (id)
 );
