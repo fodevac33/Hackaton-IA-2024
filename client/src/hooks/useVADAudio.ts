@@ -2,6 +2,7 @@
 import { useMicVAD } from "@ricky0123/vad-react";
 import { ort } from "@ricky0123/vad-web/dist/real-time-vad";
 import { transcribeAudio } from "../services/transcriptionService";
+import { processTextToSpeech } from "../services/ttsService";
 
 ort.env.wasm.wasmPaths = "https://unpkg.com/onnxruntime-web@dev/dist/";
 
@@ -33,19 +34,13 @@ export function useVADAudio(
           if (response.ok) {
             const result = await response.json(); // Assuming the response is JSON
             console.log("Response received:", result);
+            if (result) {
+              const url = await processTextToSpeech(result.response);
+              const audio = new Audio(url);
+              audio.play();
+            }
           } else {
             console.error("Failed to fetch data:", response.statusText);
-          }
-          if (response.body) {
-            // const reader = response.body.getReader();
-            // // Stream processing
-            // while (true) {
-            //   const { value, done } = await reader.read();
-            //   if (done) break;
-            //   if (value) {
-            //     setMicActive(true);
-            //   }
-            // }
           }
         }
       } catch (error) {

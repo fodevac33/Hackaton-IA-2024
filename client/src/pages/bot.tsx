@@ -6,7 +6,6 @@ import { useSearchParams } from "react-router-dom";
 
 function App() {
   const [micActive, setMicActive] = useState(false);
-  const audio = new Audio(initialAudioSrc);
 
   const [searchParams] = useSearchParams();
   const clientId = searchParams.get("clientId");
@@ -25,6 +24,8 @@ function App() {
   }, [micActive, vad]);
 
   useEffect(() => {
+    const audio = new Audio(initialAudioSrc);
+
     audio.play();
 
     audio.onended = () => {
