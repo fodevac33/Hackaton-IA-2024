@@ -12,13 +12,14 @@ export function useVADAudio(
   userId: string,
   setMicActive: React.Dispatch<React.SetStateAction<boolean>>,
   idConv: string,
-  setIdConv: React.Dispatch<React.SetStateAction<string>>
+  setIdConv: React.Dispatch<React.SetStateAction<string>>,
+  setResponse: React.Dispatch<React.SetStateAction<string>>
 ) {
   const vad = useMicVAD({
     startOnLoad: true,
     onSpeechEnd: async (audio) => {
       try {
-        // const result = "Holaa";
+        setResponse("");
         const result = await transcribeAudio(audio);
         console.log("Transcripción recibida:", result);
 
@@ -39,25 +40,32 @@ export function useVADAudio(
             });
           }
 
+          console.log("body", body);
+
           const response = await fetch(`${API_URL}/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: body,
           });
 
-          console.log(response);
+          console.log("response", response);
 
           if (response.ok) {
             const result = await response.json(); // Assuming the response is JSON
+            console.log(result);
             if (result) {
-              const url = await processTextToSpeech(result.response);
+              setResponse(result.response);
               setIdConv(result.chat_id);
-              const audio = new Audio(url);
-              audio.play();
+              setMicActive(true);
+              // const url = await processTextToSpeech(result.response);
+              // setIdConv(result.chat_id);
+              // console.log(url);
+              // const audio = new Audio(url);
+              // audio.play();
 
-              audio.onended = () => {
-                setMicActive(true);
-              };
+              // audio.onended = () => {
+              //   setMicActive(true);
+              // };
             }
           } else {
             console.error("Failed to fetch data:", response.statusText);

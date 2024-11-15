@@ -7,11 +7,18 @@ import { useSearchParams } from "react-router-dom";
 function App() {
   const [micActive, setMicActive] = useState(false);
   const [idConv, setIdConv] = useState("");
+  const [response, setReponse] = useState("");
 
   const [searchParams] = useSearchParams();
   const clientId = searchParams.get("clientId");
 
-  const vad = useVADAudio(clientId, setMicActive, idConv, setIdConv);
+  const vad = useVADAudio(
+    clientId,
+    setMicActive,
+    idConv,
+    setIdConv,
+    setReponse
+  );
 
   // Efecto para controlar el estado del micrófono basado en micActive
   useEffect(() => {
@@ -47,6 +54,7 @@ function App() {
           ? "El usuario está hablando..."
           : "No se detectó habla"}
       </p>
+      <p>{response} </p>
     </div>
   );
 }
