@@ -42,3 +42,13 @@ class ChatMessage(BaseModel):
   role: Literal['user', 'assistant']
   mensaje: str
   timestamp: Optional[str] = None
+
+
+# SentimentRequest Model (for API request input)
+class SentimentRequest(BaseModel):
+  chat_id: int
+
+# SentimentResponse Model (for API response output)
+class SentimentResponse(BaseModel):
+  rating: int = Field(..., ge=0, le=100)
+  justification: str
