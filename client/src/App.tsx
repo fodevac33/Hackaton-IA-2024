@@ -1,23 +1,19 @@
-import { useMicVAD } from "@ricky0123/vad-react";
 import { ort } from "@ricky0123/vad-web/dist/real-time-vad";
+import { Route, Routes } from "react-router-dom";
+import Index from "./pages";
+import Bot from "./pages/bot";
+import Summary from "./pages/summary";
 
 ort.env.wasm.wasmPaths = "https://unpkg.com/onnxruntime-web@dev/dist/";
 
 function App() {
-  const vad = useMicVAD({
-    startOnLoad: true,
-    onSpeechEnd: () => {
-      // const wavBuffer = utils.encodeWAV(audio);
-      // const base64 = utils.arrayBufferToBase64(wavBuffer);
-      // const url = `data:audio/wav;base64,${base64}`;
-      // console.log(url);
-      console.log("User stopped talking");
-    },
-  });
-
-  console.log(vad);
-
-  return <div>{vad.userSpeaking ? "User is speaking" : "jjjdsjfdsjdas"}</div>;
+  return (
+    <Routes>
+      <Route path="/" element={<Index />}></Route>
+      <Route path="/bot" element={<Bot />}></Route>
+      <Route path="/summary" element={<Summary />}></Route>
+    </Routes>
+  );
 }
 
 export default App;
