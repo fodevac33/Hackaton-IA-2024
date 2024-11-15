@@ -30,8 +30,6 @@ def stream_response():
   ttfb = time.time() - start_time
   print(f"Time to First Byte (TTFB): {ttfb:.2f} seconds")
 
-  # Prepare the final response object
-  full_response = {"chat_id": chat_id, "messages": []}
 
   # Iterate over the streamed content
   first_chunk_received = False
@@ -46,8 +44,7 @@ def stream_response():
       try:
         sentence = chunk.decode().strip()
         if sentence:
-          json_chunk = {"chunk": sentence}
-          full_response["messages"].append(sentence)
+          json_chunk = {"chat_id": chat_id, "chunk": sentence}
           yield json.dumps(json_chunk)
       except Exception as e:
         yield json.dumps({"error": str(e)})
