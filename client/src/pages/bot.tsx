@@ -3,9 +3,12 @@ import { useVADAudio } from "../hooks/useVADAudio";
 import { useState, useEffect } from "react";
 import initialAudioSrc from "../assets/initialAudio.mp3";
 import { useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function App() {
   const [micActive, setMicActive] = useState(false);
+  const navigate = useNavigate();
+
   const [idConv, setIdConv] = useState("");
   const [response, setReponse] = useState("");
 
@@ -46,15 +49,21 @@ function App() {
     };
   }, []);
 
+  const handleOnClick = () => {
+    navigate(`/summary?chatId=${idConv}`);
+  };
+
   return (
     <div>
-      <button>send</button>
       <p>
         {vad.userSpeaking
           ? "El usuario está hablando..."
           : "No se detectó habla"}
       </p>
       <p>{response} </p>
+      <button onClick={() => handleOnClick()} className="bg-red-600">
+        Terminar llamada
+      </button>
     </div>
   );
 }
