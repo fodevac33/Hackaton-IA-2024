@@ -5,7 +5,7 @@ export default function Index() {
   const navigate = useNavigate();
 
   const handleOnClick = (clientId: number) => {
-    navigate(`/bot/${clientId}`);
+    navigate(`/bot?clientId=${clientId}`);
   };
   return (
     <div className="h-screen w-full flex flex-col items-center p-6">
