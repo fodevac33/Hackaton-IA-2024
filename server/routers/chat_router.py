@@ -11,14 +11,11 @@ router = APIRouter()
 
 # Initialize the Mistral client
 model = "open-mistral-nemo"
-
-# Database connection path
 DB_PATH = "db/hackaton.db"
 
 # Function to fetch client information from the SQLite database
 def get_client_info(user_id: int) -> Client:
   try:
-    # Corrected use of `with` statement for connection and cursor
     with sqlite3.connect(DB_PATH) as conn:
       cursor = conn.cursor()
 
@@ -48,10 +45,40 @@ def get_client_info(user_id: int) -> Client:
         return None
   except Exception as e:
     print(f"Error fetching client info: {str(e)}")
-    return None
+    raise HTTPException(status_code=500, detail="Error fetching client info")
 
-# Generator function for streaming responses
-async def generate_response(client_context: str, user_message: str):
+# Function to create a new chat in the database
+def create_chat(user_id: int) -> int:
+  try:
+    with sqlite3.connect(DB_PATH) as conn:
+      cursor = conn.cursor()
+      cursor.execute(
+        "INSERT INTO chats (id_cliente) VALUES (?)",
+        (user_id,)
+      )
+      chat_id = cursor.lastrowid
+      return chat_id
+  except Exception as e:
+    print(f"Error creating chat: {str(e)}")
+    raise HTTPException(status_code=500, detail="Error creating chat")
+
+# Function to store a message in the database
+def store_message(chat_id: int, role: str, message: str):
+  try:
+    with sqlite3.connect(DB_PATH) as conn:
+      cursor = conn.cursor()
+      cursor.execute(
+        "INSERT INTO mensajes (id_chat, enviado_por, mensaje) VALUES (?, ?, ?)",
+        (chat_id, role, message)
+      )
+  except Exception as e:
+    print(f"Error storing message: {str(e)}")
+    raise HTTPException(status_code=500, detail="Error storing message")
+
+# Async generator function for streaming the model response
+async def response_generator(chat_id: int, client_context: str, user_message: str):
+  full_response = ""
+
   try:
     # Prepare the chat completion request
     messages = [
@@ -68,16 +95,21 @@ async def generate_response(client_context: str, user_message: str):
     # Extract the response content
     mistral_reply = chat_response.choices[0].message.content
 
-    # Split the response into sentences
+    # Split the response into sentences and yield each chunk
     sentences = re.split(r'(?<=[.!?])\s+', mistral_reply)
-
-    # Yield each sentence as a separate chunk
     for sentence in sentences:
       if sentence.strip():
-        yield sentence + " "
+        chunk = sentence + " "
+        full_response += chunk
+        yield chunk
+
+    # After streaming is complete, store the full response
+    store_message(chat_id, "assistant", full_response)
 
   except Exception as e:
-    yield f"Error: {str(e)}"
+    error_message = f"Error during response generation: {str(e)}"
+    print(error_message)
+    yield error_message
 
 # Endpoint for chat completion
 @router.post("/chat")
@@ -85,11 +117,16 @@ async def chat_completion(request: ChatRequest):
   try:
     # Fetch client information using the provided user ID
     client_info = get_client_info(request.user_id)
-
     if not client_info:
       raise HTTPException(status_code=404, detail="Client not found")
 
-    # Build the static client context with checks for optional fields
+    # Create a new chat entry in the database
+    chat_id = create_chat(request.user_id)
+
+    # Store the first user message
+    store_message(chat_id, "user", request.message)
+
+    # Build the client context
     client_context = (
       "Eres un bot de negociación financiera. Tu objetivo es lograr una propuesta favorable tanto para el banco como para el cliente.\n"
       f"Información del Cliente:\n"
@@ -102,8 +139,13 @@ async def chat_completion(request: ChatRequest):
       f"- Historial de Pagos: {client_info.historial_pagos or 'No disponible'}\n\n"
     )
 
-    # Return streaming response
-    return StreamingResponse(generate_response(client_context, request.message), media_type="text/plain")
+    # Return the streaming response
+    response = StreamingResponse(
+      response_generator(chat_id, client_context, request.message),
+      media_type="text/plain"
+    )
+    response.headers["X-Chat-Id"] = str(chat_id)
+    return response
 
   except HTTPException as http_err:
     raise http_err
