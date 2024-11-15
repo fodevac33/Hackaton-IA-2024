@@ -1,5 +1,6 @@
 import sqlite3
-from models.models import ChatRequest, Client
+from models.models import Chat, Client
+from fastapi import HTTPException
 
 DB_PATH = "db/hackaton.db"
 
@@ -52,7 +53,6 @@ def create_chat(user_id: int) -> int:
     print(f"Error creating chat: {str(e)}")
     raise HTTPException(status_code=500, detail="Error creating chat")
 
-
 # Function to store a message in the database
 def store_message(chat_id: int, role: str, message: str):
   try:
@@ -65,3 +65,47 @@ def store_message(chat_id: int, role: str, message: str):
   except Exception as e:
     print(f"Error storing message: {str(e)}")
     raise HTTPException(status_code=500, detail="Error storing message")
+
+# Function to fetch chat by ID
+def get_chat_by_id(chat_id: int) -> Chat:
+  try:
+    with sqlite3.connect(DB_PATH) as conn:
+      cursor = conn.cursor()
+      cursor.execute(
+        "SELECT id, id_cliente, fecha_inicio, fecha_fin FROM chats WHERE id = ?",
+        (chat_id,)
+      )
+      chat_data = cursor.fetchone()
+      if chat_data:
+        return Chat(
+          id=chat_data[0],
+          id_cliente=chat_data[1],
+          fecha_inicio=chat_data[2],
+          fecha_fin=chat_data[3]
+        )
+      else:
+        return None
+  except Exception as e:
+    print(f"Error fetching chat: {str(e)}")
+    raise HTTPException(status_code=500, detail="Error fetching chat")
+
+# Function to fetch messages for a chat
+def get_chat_messages(chat_id: int) -> list:
+  try:
+    with sqlite3.connect(DB_PATH) as conn:
+      cursor = conn.cursor()
+      cursor.execute(
+        "SELECT enviado_por, mensaje FROM mensajes WHERE id_chat = ? ORDER BY id ASC",
+        (chat_id,)
+      )
+      messages_data = cursor.fetchall()
+      messages = []
+      for msg in messages_data:
+        messages.append({
+          "role": msg[0],
+          "content": msg[1]
+        })
+      return messages
+  except Exception as e:
+    print(f"Error fetching chat messages: {str(e)}")
+    raise HTTPException(status_code=500, detail="Error fetching chat messages")

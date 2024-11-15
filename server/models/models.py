@@ -22,7 +22,7 @@ class Chat(BaseModel):
   fecha_inicio: Optional[datetime] = Field(default_factory=datetime.utcnow)
   fecha_fin: Optional[datetime] = None
 
-# Message Model (for 'mensajes' table)
+# Message Model (for 'mensajes' table')
 class Message(BaseModel):
   id: int
   id_chat: int
@@ -34,6 +34,7 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
   user_id: int
   message: str
+  chat_id: Optional[int] = None  # Accepts an optional chat_id
 
 # ChatMessage Model (for response or interaction representation)
 class ChatMessage(BaseModel):
