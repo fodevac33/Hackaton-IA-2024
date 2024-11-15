@@ -48,11 +48,13 @@ def get_client_info(user_id: int) -> Client:
 @router.post("/chat")
 async def chat_completion(request: ChatRequest):
   try:
+    # Fetch client information using the provided user ID
     client_info = get_client_info(request.user_id)
 
     if not client_info:
       raise HTTPException(status_code=404, detail="Client not found")
 
+    # Build the static client context
     client_context = (
       "Eres un bot de negociación financiera. Tu objetivo es lograr una propuesta favorable tanto para el banco como para el cliente.\n"
       f"Información del Cliente:\n"
@@ -65,14 +67,17 @@ async def chat_completion(request: ChatRequest):
       f"- Historial de Pagos: {client_info.historial_pagos}\n\n"
     )
 
+    # Append the user's message
     full_message = f"{client_context}Mensaje del Cliente: {request.message}"
 
-    # Use Mistral's ChatMessage factory method
+    # Create the chat message using Mistral's factory method
     chat_message = MistralChatMessage.from_user(full_message)
 
+    # Generate a response using the Mistral client
     mistral_response = client.run(messages=[chat_message])
     mistral_reply = mistral_response['replies'][0].content
 
+    # Return the Mistral reply
     return {"response": mistral_reply}
 
   except Exception as e:

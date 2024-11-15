@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS clientes (
 -- Create 'chats' table
 CREATE TABLE IF NOT EXISTS mensajes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_cliente TEXT NOT NULL,
+    id_cliente INTEGER NOT NULL,
     enviado_por TEXT CHECK(enviado_por IN ('user', 'assistant')),
     mensaje TEXT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,

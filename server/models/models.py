@@ -19,8 +19,9 @@ class Client(BaseModel):
   estado_cuenta: Optional[str] = None
   historial_pagos: Optional[str] = None
 
-# ChatMessage Model (for Mistral Client)
+# ChatMessage Model (for 'mensajes' table)
 class ChatMessage(BaseModel):
-  id_cliente: int
-  role: str
+  id_cliente: int  # Integer type to match the table
+  role: str  # 'user' or 'assistant'
   mensaje: str
+  timestamp: Optional[str] = None
