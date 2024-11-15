@@ -54,16 +54,24 @@ function App() {
   };
 
   return (
-    <div>
-      <p>
-        {vad.userSpeaking
-          ? "El usuario está hablando..."
-          : "No se detectó habla"}
-      </p>
-      <p>{response} </p>
-      <button onClick={() => handleOnClick()} className="bg-red-600">
-        Terminar llamada
-      </button>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-800">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md text-center">
+        <h1 className="text-2xl font-bold mb-4">Asistente de Voz</h1>
+        <p className="text-lg mb-4">
+          {vad.userSpeaking
+            ? "🎙️ El usuario está hablando..."
+            : "🤔 No se detectó habla"}
+        </p>
+        <p className="text-gray-600 mb-6">
+          {response || "Esperando respuesta..."}
+        </p>
+        <button
+          onClick={handleOnClick}
+          className="bg-red-600 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition duration-300"
+        >
+          Terminar llamada
+        </button>
+      </div>
     </div>
   );
 }

@@ -39,9 +39,18 @@ export default function Summary() {
   }, [API_URL, chatId]);
 
   return (
-    <div className="h-screen">
-      <h1>{sentiment}</h1>
-      <h2>{score}</h2>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded-lg p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          Sentiment Analysis
+        </h1>
+        <p className="text-lg text-gray-600 mb-2">
+          <span className="font-semibold">Justification:</span> {sentiment}
+        </p>
+        <p className="text-lg text-gray-600">
+          <span className="font-semibold">Score:</span> {score}
+        </p>
+      </div>
     </div>
   );
 }
