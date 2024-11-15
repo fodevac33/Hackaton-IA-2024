@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.chat_router import router as chat_router
+from routers.sentiment_router import router as sentiment_router
 
 app = FastAPI()
 
@@ -14,6 +15,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(chat_router, prefix="/api")
+app.include_router(sentiment_router, prefix="/api")
 
 
 @app.get("/")
