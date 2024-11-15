@@ -1,17 +1,34 @@
-import { useMicVAD } from "@ricky0123/vad-react";
+import { useVADAudio } from "../hooks/useVADAudio";
+import { useState, useEffect } from "react";
 
-export default function Bot() {
-  const vad = useMicVAD({
-    startOnLoad: true,
-    onSpeechEnd: () => {
-      // const wavBuffer = utils.encodeWAV(audio);
-      // const base64 = utils.arrayBufferToBase64(wavBuffer);
-      // const url = `data:audio/wav;base64,${base64}`;
-      // console.log(url);
-      console.log("User stopped talking");
-    },
-  });
+function App() {
+  const [micActive, setMicActive] = useState(false);
 
-  console.log(vad);
-  return <div>bot</div>;
+  const vad = useVADAudio();
+
+  // Efecto para controlar el estado del micrófono basado en micActive
+  useEffect(() => {
+    if (micActive) {
+      vad.start(); // Iniciar el micrófono
+      console.log("Micrófono activado");
+    } else {
+      vad.pause(); // Pausar el micrófono
+      console.log("Micrófono desactivado");
+    }
+  }, [micActive, vad]);
+
+  const handleButtonClick = () => {
+    setMicActive((prevState) => !prevState); // Alternar el estado
+  };
+
+  return (
+    <div>
+      <button onClick={handleButtonClick}>
+        {micActive ? "Desactivar Micrófono" : "Activar Micrófono"}
+      </button>
+      <p>{vad.userSpeaking ? "El usuario está hablando..." : "No se detectó habla"}</p>
+    </div>
+  );
 }
+
+export default App;
