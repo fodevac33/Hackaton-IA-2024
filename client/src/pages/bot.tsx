@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useVADAudio } from "../hooks/useVADAudio";
 import { useState, useEffect } from "react";
 import initialAudioSrc from "../assets/initialAudio.mp3";
@@ -36,27 +37,9 @@ function App() {
     };
   }, []);
 
-  // const handleButtonClick = () => {
-  //   const url = "https://api.play.ht/api/v2/tts/stream";
-  //   const options = {
-  //     method: "POST",
-  //     headers: { accept: "audio/mpeg", "content-type": "application/json" },
-  //     body: JSON.stringify({
-  //       voice:
-  //         "s3://voice-cloning-zero-shot/d9ff78ba-d016-47f6-b0ef-dd630f59414e/female-cs/manifest.json",
-  //       output_format: "mp3",
-  //     }),
-  //   };
-
-  //   fetch(url, options)
-  //     .then((res) => res.json())
-  //     .then((json) => console.log(json))
-  //     .catch((err) => console.error(err));
-  // };
-
   return (
     <div>
-      <button onClick={handleButtonClick}>send</button>
+      <button>send</button>
       <p>
         {vad.userSpeaking
           ? "El usuario está hablando..."

@@ -1,8 +1,11 @@
+// @ts-nocheck
 import { useMicVAD } from "@ricky0123/vad-react";
 import { ort } from "@ricky0123/vad-web/dist/real-time-vad";
 import { transcribeAudio } from "../services/transcriptionService";
 
 ort.env.wasm.wasmPaths = "https://unpkg.com/onnxruntime-web@dev/dist/";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function useVADAudio(
   userId: string,
@@ -16,12 +19,23 @@ export function useVADAudio(
         console.log("Transcripción recibida:", result);
 
         if (result) {
-          const response = await fetch(`${api}`, {
+          const body = JSON.stringify({
+            message: result.text,
+            user_id: userId,
+          });
+          console.log(body);
+          const response = await fetch(`${API_URL}/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ response: Response, userid: userId }),
+            body: body,
           });
 
+          if (response.ok) {
+            const result = await response.json(); // Assuming the response is JSON
+            console.log("Response received:", result);
+          } else {
+            console.error("Failed to fetch data:", response.statusText);
+          }
           if (response.body) {
             // const reader = response.body.getReader();
             // // Stream processing
