@@ -18,8 +18,6 @@ RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 # Copy the rest of the application code
 COPY . .
 
-# Copy the .env file (make sure it's not in .dockerignore)
-COPY .env .env
 
 # Initialize the SQLite database directly in the Dockerfile
 RUN rm -f db/hackaton.db && \
