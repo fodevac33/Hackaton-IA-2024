@@ -4,6 +4,7 @@ import Index from "./pages";
 import Bot from "./pages/bot";
 import Summary from "./pages/summary";
 
+
 ort.env.wasm.wasmPaths = "https://unpkg.com/onnxruntime-web@dev/dist/";
 
 function App() {

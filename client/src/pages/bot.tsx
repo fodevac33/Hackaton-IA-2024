@@ -1,34 +1,41 @@
+import { useState } from "react";
 import { useVADAudio } from "../hooks/useVADAudio";
-import { useState, useEffect } from "react";
+import TranscriptionView from "../components/TrascriptionView";
+import { processTextToSpeech } from "../services/ttsService";
 
-function App() {
-  const [micActive, setMicActive] = useState(false);
+export default function App() {
+  const [transcription, setTranscription] = useState("");
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
-  const vad = useVADAudio();
+  const vad = useVADAudio(setTranscription);
 
-  // Efecto para controlar el estado del micrófono basado en micActive
-  useEffect(() => {
-    if (micActive) {
-      vad.start(); // Iniciar el micrófono
-      console.log("Micrófono activado");
-    } else {
-      vad.pause(); // Pausar el micrófono
-      console.log("Micrófono desactivado");
+  const handleGenerateAudio = async () => {
+    if (!transcription) {
+      alert("Por favor, transcribe algo primero.");
+      return;
     }
-  }, [micActive, vad]);
 
-  const handleButtonClick = () => {
-    setMicActive((prevState) => !prevState); // Alternar el estado
+    const url = await processTextToSpeech(transcription);
+    if (url) {
+      setAudioUrl(url);
+    } else {
+      alert("Error al procesar texto a voz.");
+    }
   };
 
   return (
-    <div>
-      <button onClick={handleButtonClick}>
-        {micActive ? "Desactivar Micrófono" : "Activar Micrófono"}
-      </button>
-      <p>{vad.userSpeaking ? "El usuario está hablando..." : "No se detectó habla"}</p>
+    <div className="h-screen w-full flex flex-col items-center p-6">
+      <h1>Micrófono</h1>
+      <button onClick={() => vad.start()}>Iniciar</button>
+      <button onClick={() => vad.pause()}>Pausar</button>
+      <button onClick={handleGenerateAudio}>Generar Audio</button>
+      <TranscriptionView transcription={transcription} />
+      {audioUrl && (
+        <audio controls autoPlay>
+          <source src={audioUrl} type="audio/mpeg" />
+          Tu navegador no soporta el elemento de audio.
+        </audio>
+      )}
     </div>
   );
 }
-
-export default App;
