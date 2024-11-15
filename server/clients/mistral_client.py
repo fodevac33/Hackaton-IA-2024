@@ -2,4 +2,4 @@ from haystack_integrations.components.generators.mistral import MistralChatGener
 from utils.config import MISTRAL_API_KEY
 
 model = "open-mistral-nemo"  # Specify your desired model
-client = MistralChatGenerator(model=model)
+mistral_client = MistralChatGenerator(model=model)
